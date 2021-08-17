@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["referentialActions"]
+}
+
+model Models {
+  id Int @id @default(autoincrement())
+  firstname String
+  lastname String
+  fee Int
+  outfits Outfits []
+}
+
+model Outfits {
+  id Int @id @default(autoincrement())
+  name String @unique
+  season String
+  cost Int
+  modelId Int
+  designerId Int
+  guestId Int?
+  eventId Int
+  model Models @relation(fields: [modelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  designer Designers @relation(fields: [designerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  guest Guests? @relation(fields: [guestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  event Events @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Designers {
+  id Int @id @default(autoincrement())
+  firstname String
+  lastname String
+  outfits Outfits []
+}
+
+model Events {
+  id Int @id @default(autoincrement())
+  name String @unique
+  date DateTime @db.Date
+  time DateTime @db.Time(2)
+  venue String
+  max_capacity Int
+  outfits Outfits []
+  guests GuestAtEvent []
+}
+
+model Guests {
+  id Int @id @default(autoincrement())
+  firstname String
+  lastname String
+  outfits Outfits []
+  events GuestAtEvent []
+}
+
+model GuestAtEvent {
+  id Int @id @default(autoincrement())
+  guestId Int
+  eventId Int
+  guest Guests @relation(fields: [guestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  event Events @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
